@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Evaluación de Caída Libre · Física 2.º BGU</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+  <style>
+    :root{
+      color-scheme:light; box-sizing:border-box;
+      --bg:#f4f6f9; --card:#ffffff; --fg:#17212b; --muted:#5b6876; --line:#d7dee6;
+      --band:#ffd54a; --band-fg:#2a2300; --accent:#2f6fa8; --accent-fg:#ffffff; --accent-soft:#dceefb;
+      --ok:#1f7a3d; --ok-soft:#e3f4e1; --bad:#b3261e; --bad-soft:#fbe4e2;
+      --warn:#9a5b00; --warn-soft:#fff3cd;
+      --head:'Space Grotesk',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif;
+    }
+    @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+      --bg:#0f161d; --card:#17212b; --fg:#e8eef4; --muted:#9aa8b6; --line:#2b3947;
+      --band:#e8bf36; --band-fg:#1f1a00; --accent:#6fb1e6; --accent-fg:#0b1721; --accent-soft:#1d3347;
+      --ok:#6fcf8d; --ok-soft:#173223; --bad:#ff8f87; --bad-soft:#3a1d1b;
+      --warn:#ffd166; --warn-soft:#3b2e13; color-scheme:dark}}
+    *{box-sizing:border-box}
+    body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body);margin:0}
+    .band{background:var(--band);color:var(--band-fg);padding:14px max(16px,env(safe-area-inset-left,0px))}
+    .band-in{max-width:760px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .band small{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;opacity:.85}
+    .band h1{font:700 21px/1.2 var(--head);margin:2px 0 0;text-wrap:balance}
+    .header-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .badge-pill{background:var(--card);color:var(--fg);border:2px solid var(--band-fg);border-radius:999px;padding:6px 14px;font:700 14px/1 var(--head);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:6px}
+    .timer-pill{font-size:16px}
+    .timer-pill.danger{background:var(--bad);color:#fff;border-color:var(--bad);animation:pulse 1s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.78}}
+    main{max-width:760px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-left,0px)) 44px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;min-width:0}
+    h2{font:700 20px/1.3 var(--head);margin:0 0 10px;text-wrap:balance}
+    p{margin:0 0 12px}
+    .muted{color:var(--muted)}
+    ul.rules{margin:0 0 16px;padding-left:20px}
+    ul.rules li{margin-bottom:6px}
+    .history-banner{background:var(--accent-soft);border:1px solid var(--accent);color:var(--fg);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .history-banner strong{color:var(--accent);font-family:var(--head)}
+    label.f{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+    input[type=text],select{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+    .two{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:14px}
+    button{font:600 15px var(--body);border:0;border-radius:8px;padding:11px 20px;background:var(--accent);color:var(--accent-fg);cursor:pointer}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    button:focus-visible,input:focus-visible,select:focus-visible,.opt:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+    .prog{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px}
+    .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:16px}
+    .bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+    .tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:5px;margin-bottom:10px}
+    .q{font:500 18px/1.45 var(--body);margin:0 0 16px}
+    .opt{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:8px;margin-bottom:10px;cursor:pointer;background:var(--bg)}
+    .opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+    .opt input{margin-top:5px;accent-color:var(--accent)}
+    .opt b{font-family:var(--head);min-width:1.2em}
+    .nav{display:flex;justify-content:space-between;gap:12px;margin-top:12px}
+    .score{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+    .score .n{font:700 50px/1 var(--head);font-variant-numeric:tabular-nums}
+    .attempt-pill{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:5px 12px;font:700 15px/1.2 var(--head)}
+    .status-box{padding:12px 14px;border-radius:8px;font-size:14px;font-weight:500;margin:12px 0;background:var(--warn-soft);color:var(--warn);border:1px solid currentColor}
+    .status-box.ok{background:var(--ok-soft);color:var(--ok)}
+    .status-box.bad{background:var(--bad-soft);color:var(--bad)}
+    .rev{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+    .rev .st{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:5px;display:inline-block;margin-bottom:6px}
+    .rev .ok{background:var(--ok-soft);color:var(--ok)}
+    .rev .bad{background:var(--bad-soft);color:var(--bad)}
+    .rev p{margin-bottom:6px;font-size:15px}
+    .exp{background:var(--accent-soft);border-radius:8px;padding:8px 12px;font-size:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  </style>
+</head>
+<body>
+<header class="band">
+  <div class="band-in">
+    <div>
+      <small>Unidad Educativa Uyumbicho · Física 2.º BGU</small>
+      <h1>Evaluación de Caída Libre y Lanzamiento Vertical</h1>
+    </div>
+    <div class="header-badges">
+      <div id="intentoHeader" class="badge-pill">Intento N.º 1</div>
+      <div id="timerBox" class="badge-pill timer-pill" hidden>⏱ <span id="reloj">10:00</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="inicio" class="card">
+    <h2>Instrucciones de la evaluación</h2>
+    <div id="historialInicio" class="history-banner">
+      <span>Estado en este dispositivo: <strong id="textoHistorialInicio">Sin intentos previos realizados (próximo: Intento N.º 1)</strong></span>
+      <span id="ultimaNotaBadge" class="muted"></span>
+    </div>
+    <ul class="rules">
+      <li><strong>Estructura:</strong> 10 preguntas aleatorias seleccionadas de un banco de 20 tipos de reactivos (3 conceptuales y 7 de resolución numérica), con 4 alternativas y una sola respuesta correcta.</li>
+      <li><strong>Calificación:</strong> Escala sobre <strong>10,00 puntos</strong> (cada acierto equivale a <strong>1,00 punto</strong>).</li>
+      <li><strong>Tiempo límite:</strong> Dispones de <strong>10 minutos</strong>. Al agotarse el tiempo, la prueba finalizará automáticamente con las respuestas marcadas hasta ese momento.</li>
+      <li><strong>Constantes:</strong> Usa <em>g = 9,81 m/s²</em> en la Tierra, despreciando la resistencia del aire, salvo que el enunciado indique otro cuerpo celeste.</li>
+      <li><strong>Registro:</strong> Cada vez que abres o completas la evaluación se contabiliza automáticamente tu número de intento.</li>
+    </ul>
+    <label class="f" for="nombre">Apellidos y Nombres completos</label>
+    <input type="text" id="nombre" autocomplete="name" placeholder="Ej.: Pérez Gómez Juan Carlos">
+    <div class="two">
+      <div>
+        <label class="f" for="curso">Curso</label>
+        <select id="curso">
+          <option value="">Elige tu curso</option>
+          <option value="Segundo BGU">Segundo BGU</option>
+          <option value="Segundo BT">Segundo BT</option>
+        </select>
+      </div>
+      <div>
+        <label class="f" for="paralelo">Paralelo</label>
+        <select id="paralelo">
+          <option value="">Elige</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+        </select>
+      </div>
+    </div>
+    <p class="muted" id="aviso" style="margin:10px 0 0;font-size:14px;color:var(--bad)" role="alert"></p>
+    <div class="row"><button id="comenzar">Comenzar evaluación (10 min)</button></div>
+  </section>
+
+  <section id="prueba" class="card" hidden>
+    <div class="prog"><span id="pn"></span><span id="pc"></span></div>
+    <div class="bar"><i id="pb"></i></div>
+    <span class="tag" id="tipo"></span>
+    <p class="q" id="enun"></p>
+    <div id="opts" role="radiogroup" aria-label="Alternativas"></div>
+    <div class="nav">
+      <button class="ghost" id="ant">Anterior</button>
+      <button id="sig">Siguiente</button>
+    </div>
+  </section>
+
+  <section id="fin" class="card" hidden>
+    <div class="score">
+      <span class="n" id="nota"></span>
+      <span class="attempt-pill" id="intentoFinalBadge">Intento N.º 1</span>
+      <span class="muted" id="det"></span>
+    </div>
+    <p id="msg"></p>
+    <div id="syncStatus" class="status-box" hidden></div>
+    <div class="row">
+      <button id="descargarExcel">Descargar resultado en Excel (.xls)</button>
+      <button id="reintentarEnvio" hidden>Reintentar envío al docente</button>
+      <button class="ghost" id="copiar">Copiar comprobante</button>
+      <button class="ghost" id="nuevo">Nuevo intento</button>
+    </div>
+    <p class="muted" id="cp" style="margin-top:10px;font-size:14px"></p>
+    <div id="rev"></div>
+  </section>
+</main>
+
+<script>
+(function(){
+  const TOTAL_PREGUNTAS = 10;
+  const TIEMPO_SEGUNDOS = 10 * 60; // 10 minutos
+  const STORAGE_KEY = 'fisica_2bgu_caida_libre_historial_v1';
+  const G = 9.81;
+  const PL = {Tierra:9.81, Luna:1.62, Marte:3.71, "Júpiter":24.79, Neptuno:11.15, "Plutón":0.62, Saturno:10.44};
+
+  const rnd = a => a[Math.floor(Math.random()*a.length)];
+  function shuffle(a){
+    a = a.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+  const f = (x,d=2) => x.toFixed(d).replace('.',',');
+
+  // Persistencia local del historial de aperturas/intentos
+  function leerHistorial(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return { aperturas: 0, completados: 0, ultimaNota: null, ultimoNombre: '', ultimoCurso: '', ultimoParalelo: '' };
+      const parsed = JSON.parse(raw);
+      return {
+        aperturas: Number(parsed.aperturas) || 0,
+        completados: Number(parsed.completados) || 0,
+        ultimaNota: parsed.ultimaNota !== undefined ? parsed.ultimaNota : null,
+        ultimoNombre: parsed.ultimoNombre || '',
+        ultimoCurso: parsed.ultimoCurso || '',
+        ultimoParalelo: parsed.ultimoParalelo || ''
+      };
+    } catch(e){
+      return { aperturas: 0, completados: 0, ultimaNota: null, ultimoNombre: '', ultimoCurso: '', ultimoParalelo: '' };
+    }
+  }
+
+  function guardarHistorial(data){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch(e){}
+  }
+
+  function num(tipo,q,c,cands,unit,exp,d=2){
+    const cs = f(c,d)+' '+unit, set = [cs];
+    for(const x of cands){
+      const s = f(x,d)+' '+unit;
+      if(x>0 && isFinite(x) && !set.includes(s)) set.push(s);
+      if(set.length===4) break;
+    }
+    let k = 1.45;
+    while(set.length<4){
+      const s = f(c*k,d)+' '+unit;
+      if(!set.includes(s)) set.push(s);
+      k += 0.65;
+    }
+    return {tipo,q,c:cs,o:set,e:exp};
+  }
+  function conc(q,c,d,e){ return {tipo:'Concepto',q,c,o:[c].concat(d),e}; }
+
+  // Banco conceptual (8 generadores -> se eligen 3 al azar)
+  const CONC = [
+    ()=>conc('En caída libre, sin resistencia del aire, ¿cuál afirmación es correcta?',
+      'Todos los cuerpos caen con la misma aceleración, sin importar su masa.',
+      ['Los cuerpos más pesados caen con mayor aceleración.','La velocidad del cuerpo se mantiene constante durante la caída.','La aceleración aumenta proporcionalmente a la masa del cuerpo.'],
+      'La aceleración de caída libre es g y es independiente de la masa del cuerpo.'),
+    ()=>conc('Un balón se lanza verticalmente hacia arriba. En el punto más alto de su trayectoria:',
+      'su velocidad es 0 y su aceleración es g, dirigida hacia abajo.',
+      ['su velocidad es 0 y su aceleración también es 0.','su velocidad es máxima y su aceleración es 0.','su velocidad es g y su aceleración es 0.'],
+      'En el punto más alto el cuerpo se detiene un instante (v = 0), pero la gravedad sigue actuando (a = g).'),
+    ()=>conc('En la gráfica velocidad–tiempo de un cuerpo que se suelta en caída libre, la pendiente de la recta representa:',
+      'la aceleración de la gravedad.',
+      ['la altura inicial.','el tiempo de caída.','el desplazamiento del cuerpo.'],
+      'La pendiente en un gráfico v–t equivale a Δv / Δt = g.'),
+    ()=>conc('Se lanza un objeto hacia arriba desde el suelo. Sin fricción del aire, al volver al nivel de lanzamiento su rapidez es:',
+      'igual a la rapidez inicial del lanzamiento.',
+      ['mayor que la rapidez inicial.','menor que la rapidez inicial.','igual a cero.'],
+      'La trayectoria vertical sin rozamiento es simétrica: conserva la misma rapidez a igual altura.'),
+    ()=>conc('En la Luna, sin atmósfera, se sueltan simultáneamente un martillo y una pluma desde la misma altura. Entonces:',
+      'llegan al mismo tiempo al suelo.',
+      ['el martillo llega primero por tener mayor peso.','la pluma llega primero por tener menor inercia.','ninguno cae porque no existe gravedad lunar.'],
+      'En ausencia de aire, ambos experimentan la misma aceleración (g = 1,62 m/s²).'),
+    ()=>conc('Si un cuerpo se lanza verticalmente hacia arriba, el tiempo que tarda en subir hasta su altura máxima comparado con el tiempo que tarda en bajar al punto de partida es:',
+      'exactamente igual.',
+      ['el doble del tiempo de bajada.','la mitad del tiempo de bajada.','mayor debido a la gravedad.'],
+      'Por simetría cinemática (sin resistencia del aire), t_subida = t_bajada = v₀ / g.'),
+    ()=>conc('¿Qué ocurre con la distancia recorrida por un cuerpo en caída libre durante cada segundo sucesivo?',
+      'Aumenta en cada segundo porque su velocidad crece uniformemente.',
+      ['Permanece constante en cada segundo.','Disminuye conforme se acerca al suelo.','Es igual a 9,81 m en cada segundo.'],
+      'Al ser un MRUV, el desplazamiento crece cuadráticamente con el tiempo (Δy = ½gt²).'),
+    ()=>conc('Un estudiante suelta una moneda desde la ventana de un edificio. El término «se suelta» implica matemáticamente que:',
+      'la velocidad inicial es v₀ = 0 m/s.',
+      ['la aceleración inicial es a = 0 m/s².','la velocidad final es v = 0 m/s.','el tiempo inicial es t = 9,81 s.'],
+      'Soltar o dejar caer un cuerpo desde el reposo significa que parte con v₀ = 0 m/s.')
+  ];
+
+  // Banco numérico parametrizado (12 generadores -> con los 8 conceptuales suman 20 reactivos base; se eligen 7 al azar)
+  const NUM = [
+    ()=>{const h=rnd([20,45,80,125,180,245]);const t=Math.sqrt(2*h/G);
+      return num('Cálculo','Se suelta una piedra desde una altura de '+h+' m en la Tierra. ¿Cuánto tarda en llegar al suelo?',t,[h/G,Math.sqrt(h/G),2*h/G,Math.sqrt(2*h*G)],'s','t = √(2h / g) = √(2·'+h+' / 9,81) = '+f(t)+' s.')},
+    ()=>{const t=rnd([2,3,4,5,6,7]);const v=G*t;
+      return num('Cálculo','Un objeto se suelta desde una torre en la Tierra. ¿Qué rapidez tiene a los '+t+' s de caída?',v,[G*t/2,G*t*t,G*t*t/2,t/G],'m/s','v = g·t = 9,81·'+t+' = '+f(v)+' m/s.')},
+    ()=>{const [h,v0]=rnd([[60,12],[40,10],[80,15],[50,8],[100,20],[75,14]]);const t=(-v0+Math.sqrt(v0*v0+2*G*h))/G;
+      return num('Cálculo','Desde un puente de '+h+' m se lanza hacia abajo una pelota con '+v0+' m/s en la Tierra. ¿Cuánto tarda en llegar al suelo?',t,[h/v0,Math.sqrt(2*h/G),(v0+Math.sqrt(v0*v0+2*G*h))/G,h/(v0+G)],'s','h = v₀·t + ½·g·t² → t = (−v₀ + √(v₀² + 2gh)) / g = '+f(t)+' s.')},
+    ()=>{const v0=rnd([15,20,25,30,35,40]);const h=v0*v0/(2*G);
+      return num('Cálculo','Desde el suelo se lanza un balón verticalmente hacia arriba con '+v0+' m/s en la Tierra. ¿Qué altura máxima alcanza?',h,[v0*v0/G,v0/G,v0*v0/(4*G),2*v0*v0/G],'m','h máx = v₀² / (2g) = '+v0+'² / 19,62 = '+f(h)+' m.')},
+    ()=>{const v0=rnd([12,16,20,24,30,36]);const t=2*v0/G;
+      return num('Cálculo','Un balón se lanza hacia arriba desde el suelo con '+v0+' m/s en la Tierra. ¿Cuánto tiempo permanece en el aire?',t,[v0/G,v0*v0/G,4*v0/G,v0/(2*G)],'s','t total = 2·v₀ / g = 2·'+v0+' / 9,81 = '+f(t)+' s.')},
+    ()=>{const p=rnd(['Luna','Marte','Júpiter','Neptuno','Saturno']),g=PL[p],h=rnd([50,100,150,200]);const t=Math.sqrt(2*h/g);
+      return num('Planetas','En '+p+' (g = '+f(g)+' m/s²) se suelta una roca desde '+h+' m de altura. ¿Cuánto tarda en llegar al suelo?',t,[Math.sqrt(2*h/G),Math.sqrt(h/g),2*h/g,h/g],'s','t = √(2h / g) = √(2·'+h+' / '+f(g)+') = '+f(t)+' s.')},
+    ()=>{const p=rnd(['Luna','Marte','Tierra','Júpiter','Neptuno']),g=PL[p],h=100,t=Math.round(Math.sqrt(2*h/g)*100)/100;
+      const otros=shuffle(['Luna','Marte','Tierra','Júpiter','Neptuno','Plutón'].filter(x=>x!==p)).slice(0,3);
+      const gx=2*h/(t*t);
+      return {tipo:'Planetas',q:'En un experimento se suelta un objeto desde '+h+' m y tarda '+f(t)+' s en llegar al suelo. ¿En qué cuerpo celeste se realizó?',c:p,o:[p].concat(otros),e:'g = 2h / t² = 2·'+h+' / '+f(t)+'² = '+f(gx)+' m/s², valor de '+p+'.'}},
+    ()=>{const [h,v0]=rnd([[30,10],[45,8],[60,14],[80,12],[20,6],[90,15]]);const v=Math.sqrt(v0*v0+2*G*h);
+      return num('Cálculo','Se lanza hacia abajo una piedra con '+v0+' m/s desde '+h+' m de altura en la Tierra. ¿Con qué rapidez llega al suelo?',v,[Math.sqrt(2*G*h),v0+Math.sqrt(2*G*h),Math.sqrt(v0*v0+G*h),v0+G],'m/s','v = √(v₀² + 2gh) = √('+v0+'² + 2·9,81·'+h+') = '+f(v)+' m/s.',1)},
+    ()=>{const t=rnd([2,3,4,5,6]);const d=0.5*G*t*t;
+      return num('Gráficas','Un cuerpo se suelta en la Tierra. En su gráfica v–t, el área bajo la recta entre 0 y '+t+' s representa la distancia caída. ¿Cuánto vale?',d,[G*t*t,G*t,G*t/2,0.5*G*t],'m','Área = ½·t·(g·t) = ½·9,81·'+t+'² = '+f(d)+' m.',1)},
+    ()=>{const v0=rnd([20,25,30,35]),t=rnd([1,2]);const y=v0*t-0.5*G*t*t;
+      return num('Cálculo','Se lanza una pelota hacia arriba desde el suelo con '+v0+' m/s en la Tierra. ¿A qué altura se encuentra a los '+t+' s?',y,[v0*t,v0*t+0.5*G*t*t,0.5*G*t*t,v0*t-G*t*t],'m','y = v₀·t − ½·g·t² = '+v0+'·'+t+' − ½·9,81·'+t+'² = '+f(y)+' m.',1)},
+    ()=>{const h=rnd([45,80,125,180]);const v=Math.sqrt(2*G*h);
+      return num('Cálculo','¿Con qué rapidez inicial debe lanzarse un proyectil verticalmente hacia arriba desde el suelo para alcanzar '+h+' m de altura máxima en la Tierra?',v,[Math.sqrt(G*h),2*G*h,h/G,Math.sqrt(h/(2*G))],'m/s','v₀ = √(2·g·h) = √(2·9,81·'+h+') = '+f(v)+' m/s.')},
+    ()=>{const tSub=rnd([2,3,4,5]);const v0=G*tSub;
+      return num('Cálculo','Un cohete de juguete es lanzado verticalmente hacia arriba y tarda '+tSub+' s en alcanzar su altura máxima en la Tierra. ¿Con qué rapidez fue lanzado?',v0,[G*tSub/2,2*G*tSub,0.5*G*tSub*tSub,tSub/G],'m/s','En la altura máxima v = 0, por tanto v₀ = g·t_subida = 9,81·'+tSub+' = '+f(v0)+' m/s.')}
+  ];
+
+  let Q=[], R=[], idx=0, nombre='', curso='', paralelo='', grupo='';
+  let timerId=null, segundosRestantes=TIEMPO_SEGUNDOS, inicioMs=0, finalizado=false, payloadEnvio=null;
+  let intentoActual = 1;
+  const $ = id => document.getElementById(id);
+  const esAppsScript = () => (typeof google !== 'undefined' && google.script && google.script.run);
+
+  function inicializarContadorAlAbrir(){
+    const hist = leerHistorial();
+    // Incrementa el contador cada vez que se abre la aplicación
+    hist.aperturas += 1;
+    intentoActual = hist.aperturas;
+    guardarHistorial(hist);
+
+    $('intentoHeader').textContent = 'Intento N.º ' + intentoActual;
+    if(hist.completados > 0){
+      $('textoHistorialInicio').textContent = 'Apertura / Intento N.º ' + intentoActual + ' (' + hist.completados + ' finalizado' + (hist.completados === 1 ? '' : 's') + ')';
+      if(hist.ultimaNota !== null){
+        $('ultimaNotaBadge').textContent = 'Última nota: ' + f(Number(hist.ultimaNota), 2) + '/10';
+      }
+    } else {
+      $('textoHistorialInicio').textContent = 'Apertura / Intento N.º ' + intentoActual;
+    }
+
+    // Autocompleta datos del estudiante si ya ingresó antes en el mismo dispositivo
+    if(hist.ultimoNombre) $('nombre').value = hist.ultimoNombre;
+    if(hist.ultimoCurso) $('curso').value = hist.ultimoCurso;
+    if(hist.ultimoParalelo) $('paralelo').value = hist.ultimoParalelo;
+  }
+
+  function nuevo(incrementarIntento = false){
+    if(incrementarIntento){
+      const hist = leerHistorial();
+      hist.aperturas += 1;
+      intentoActual = hist.aperturas;
+      guardarHistorial(hist);
+      $('intentoHeader').textContent = 'Intento N.º ' + intentoActual;
+    }
+    const a = shuffle(CONC).slice(0,3).map(gen=>gen());
+    const b = shuffle(NUM).slice(0,7).map(gen=>gen());
+    Q = shuffle(a.concat(b)).map(q=>({...q, o:shuffle(q.o)}));
+    R = Q.map(()=>-1);
+    idx = 0;
+    finalizado = false;
+  }
+
+  function show(id){
+    ['inicio','prueba','fin'].forEach(x => $(x).hidden = x !== id);
+    window.scrollTo(0,0);
+  }
+
+  function formatReloj(seg){
+    const m = Math.floor(seg/60);
+    const s = seg % 60;
+    return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+
+  function iniciarCronometro(){
+    segundosRestantes = TIEMPO_SEGUNDOS;
+    inicioMs = Date.now();
+    $('timerBox').hidden = false;
+    $('timerBox').classList.remove('danger');
+    $('reloj').textContent = formatReloj(segundosRestantes);
+
+    clearInterval(timerId);
+    timerId = setInterval(()=>{
+      segundosRestantes--;
+      if(segundosRestantes <= 90){
+        $('timerBox').classList.add('danger');
+      }
+      if(segundosRestantes <= 0){
+        segundosRestantes = 0;
+        $('reloj').textContent = '00:00';
+        clearInterval(timerId);
+        fin('Tiempo agotado (10:00)');
+        return;
+      }
+      $('reloj').textContent = formatReloj(segundosRestantes);
+    }, 1000);
+  }
+
+  function pinta(){
+    const q = Q[idx];
+    $('pn').textContent = 'Pregunta ' + (idx+1) + ' de ' + Q.length;
+    $('pc').textContent = R.filter(x=>x>=0).length + ' respondidas';
+    $('pb').style.width = ((idx+1)/Q.length*100) + '%';
+    $('tipo').textContent = q.tipo;
+    $('enun').textContent = q.q;
+
+    const box = $('opts');
+    box.textContent = '';
+    q.o.forEach((t,i)=>{
+      const l = document.createElement('label'); l.className = 'opt';
+      const r = document.createElement('input'); r.type = 'radio'; r.name = 'op'; r.checked = R[idx]===i;
+      r.addEventListener('change',()=>{
+        R[idx] = i;
+        $('pc').textContent = R.filter(x=>x>=0).length + ' respondidas';
+        $('sig').disabled = false;
+      });
+      const b = document.createElement('b'); b.textContent = 'ABCD'[i] + '.';
+      const s = document.createElement('span'); s.textContent = t;
+      l.append(r,b,s); box.append(l);
+    });
+
+    $('ant').disabled = idx === 0;
+    $('sig').textContent = idx === Q.length-1 ? 'Finalizar' : 'Siguiente';
+    $('sig').disabled = R[idx] < 0;
+  }
+
+  function enviarAlServidor(datos){
+    const box = $('syncStatus');
+    const btnRetry = $('reintentarEnvio');
+    box.hidden = false;
+    box.className = 'status-box';
+    box.textContent = 'Guardando calificación en el registro del docente...';
+    btnRetry.hidden = true;
+
+    google.script.run
+      .withSuccessHandler(res=>{
+        if(res && res.ok){
+          box.className = 'status-box ok';
+          box.textContent = '✔ ' + res.mensaje;
+        } else {
+          box.className = 'status-box bad';
+          box.textContent = '⚠ ' + (res ? res.mensaje : 'No se pudo confirmar el guardado.');
+          btnRetry.hidden = false;
+        }
+      })
+      .withFailureHandler(err=>{
+        box.className = 'status-box bad';
+        box.textContent = '⚠ Error de conexión al guardar: ' + err.message;
+        btnRetry.hidden = false;
+      })
+      .registrarEvaluacion(datos);
+  }
+
+  function descargarExcelLocal(datos){
+    const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const fecha = new Date().toLocaleString('es-EC');
+    const filasDetalle = Q.map((q,i)=>{
+      const resp = R[i]>=0 ? q.o[R[i]] : 'Sin responder';
+      const ok = R[i]>=0 && q.o[R[i]]===q.c;
+      return `<tr>
+        <td>${i+1}</td>
+        <td>${esc(q.tipo)}</td>
+        <td>${esc(q.q)}</td>
+        <td>${esc(resp)}</td>
+        <td>${esc(q.c)}</td>
+        <td>${ok ? 'Correcta (1,00)' : 'Incorrecta (0,00)'}</td>
+      </tr>`;
+    }).join('');
+
+    const htmlExcel = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="utf-8"></head>
+      <body>
+        <table border="1">
+          <tr><th colspan="6" style="background:#FFD54A;font-size:14pt;">Unidad Educativa Uyumbicho · Evaluación de Física 2.º BGU</th></tr>
+          <tr><th>Fecha</th><td>${esc(fecha)}</td><th>Estudiante</th><td>${esc(datos.nombre)}</td><th>Curso / Paralelo</th><td>${esc(datos.curso)} "${esc(datos.paralelo)}"</td></tr>
+          <tr><th>Aciertos</th><td>${datos.aciertos} / 10</td><th>Calificación</th><td><b>${f(datos.nota,2)} / 10</b> (Intento N.º ${datos.intento})</td><th>Tiempo</th><td>${esc(datos.tiempoEmpleado)} (${esc(datos.motivoEnvio)})</td></tr>
+        </table>
+        <br>
+        <table border="1">
+          <tr style="background:#2F6FA8;color:#FFFFFF;">
+            <th>#</th><th>Tipo</th><th>Pregunta</th><th>Respuesta Estudiante</th><th>Respuesta Correcta</th><th>Estado</th>
+          </tr>
+          ${filasDetalle}
+        </table>
+      </body></html>`;
+
+    const blob = new Blob(['\ufeff', htmlExcel], {type: 'application/vnd.ms-excel;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const slug = datos.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_');
+    a.href = url;
+    a.download = `Fisica_2BGU_${slug || 'Estudiante'}_Intento${datos.intento}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function fin(motivo = 'Completado por el estudiante'){
+    if(finalizado) return;
+    finalizado = true;
+    clearInterval(timerId);
+    $('timerBox').hidden = true;
+
+    const usadosSeg = Math.min(TIEMPO_SEGUNDOS, Math.max(1, Math.round((Date.now() - inicioMs)/1000)));
+    const tiempoStr = formatReloj(usadosSeg);
+
+    const ok = Q.map((q,i)=> R[i]>=0 && q.o[R[i]]===q.c);
+    const aciertos = ok.filter(Boolean).length;
+    const errores = Q.length - aciertos;
+    const nota = Number((aciertos * 1.0).toFixed(2));
+    const notaStr = f(nota, 2);
+
+    // Actualizar historial con nota y completados
+    const hist = leerHistorial();
+    hist.completados += 1;
+    hist.ultimaNota = nota;
+    hist.ultimoNombre = nombre;
+    hist.ultimoCurso = curso;
+    hist.ultimoParalelo = paralelo;
+    guardarHistorial(hist);
+
+    $('nota').textContent = notaStr + '/10';
+    $('intentoFinalBadge').textContent = 'Intento N.º ' + intentoActual;
+    $('det').textContent = nombre + ' · ' + grupo + ' · ' + aciertos + '/10 aciertos · Tiempo: ' + tiempoStr;
+    $('msg').textContent = nota>=9 ? 'Excelente dominio del tema.'
+      : nota>=7 ? 'Buen trabajo. Revisa la retroalimentación abajo.'
+      : nota>=5 ? 'Vas por buen camino. Repasa las fórmulas y conceptos clave.'
+      : 'Conviene repasar el tema con tu docente.';
+
+    const resumenArray = Q.map((q,i)=> 'P'+(i+1)+':'+(ok[i]?'OK':(R[i]<0?'SR':'ERR')));
+    const rev = $('rev'); rev.textContent = '';
+    Q.forEach((q,i)=>{
+      const d = document.createElement('div'); d.className = 'rev';
+      const st = document.createElement('span');
+      st.className = 'st ' + (ok[i]?'ok':'bad');
+      st.textContent = (ok[i]?'Correcta':'Incorrecta') + ' · Pregunta ' + (i+1) + ' (' + (ok[i]?'+1,00':'0,00') + ' pt)';
+      const p1 = document.createElement('p'); p1.textContent = q.q;
+      const respUser = R[i]>=0 ? q.o[R[i]] : 'Sin responder';
+      const p2 = document.createElement('p');
+      p2.textContent = 'Tu respuesta: ' + respUser + (ok[i] ? '' : '   ·   Correcta: ' + q.c);
+      const e = document.createElement('div'); e.className = 'exp'; e.textContent = q.e;
+      d.append(st,p1,p2,e); rev.append(d);
+    });
+
+    payloadEnvio = {
+      nombre: nombre,
+      curso: curso,
+      paralelo: paralelo,
+      aciertos: aciertos,
+      errores: errores,
+      nota: nota,
+      intento: intentoActual,
+      tiempoEmpleado: tiempoStr,
+      motivoEnvio: motivo,
+      detalle: resumenArray.join(' | ')
+    };
+
+    window._res = 'Evaluación de Caída Libre (Física 2.º BGU) — ' + nombre + ' — ' + grupo + ' — Nota: ' + notaStr + '/10 · Intento N.º ' + intentoActual + ' (' + aciertos + '/10 aciertos) — Tiempo: ' + tiempoStr;
+    show('fin');
+
+    if(esAppsScript()){
+      $('nuevo').hidden = true;
+      enviarAlServidor(payloadEnvio);
+    } else {
+      $('syncStatus').hidden = false;
+      $('syncStatus').className = 'status-box ok';
+      $('syncStatus').textContent = '✔ Evaluación finalizada (Intento N.º ' + intentoActual + '). Puedes descargar tu reporte en Excel o copiar el comprobante.';
+      $('nuevo').hidden = false;
+    }
+  }
+
+  $('comenzar').onclick = ()=>{
+    nombre = $('nombre').value.trim();
+    curso = $('curso').value;
+    paralelo = $('paralelo').value;
+    const av = $('aviso');
+    if(!nombre){ av.textContent = 'Escribe tus apellidos y nombres completos.'; $('nombre').focus(); return; }
+    if(!curso){ av.textContent = 'Elige tu curso.'; $('curso').focus(); return; }
+    if(!paralelo){ av.textContent = 'Elige tu paralelo.'; $('paralelo').focus(); return; }
+    av.textContent = '';
+    grupo = curso + ' "' + paralelo + '"';
+
+    const hist = leerHistorial();
+    hist.ultimoNombre = nombre;
+    hist.ultimoCurso = curso;
+    hist.ultimoParalelo = paralelo;
+    guardarHistorial(hist);
+
+    nuevo(false);
+    pinta();
+    show('prueba');
+    iniciarCronometro();
+  };
+
+  $('nombre').addEventListener('keydown', e=>{ if(e.key==='Enter') $('comenzar').click(); });
+  $('sig').onclick = ()=>{ if(idx === Q.length-1){ fin(); } else { idx++; pinta(); } };
+  $('ant').onclick = ()=>{ if(idx > 0){ idx--; pinta(); } };
+  $('nuevo').onclick = ()=>{ nuevo(true); pinta(); show('prueba'); iniciarCronometro(); };
+  $('descargarExcel').onclick = ()=>{ if(payloadEnvio) descargarExcelLocal(payloadEnvio); };
+  $('reintentarEnvio').onclick = ()=>{ if(payloadEnvio) enviarAlServidor(payloadEnvio); };
+  $('copiar').onclick = ()=>{
+    const t = window._res, m = $('cp');
+    const fb = ()=>{
+      const ta = document.createElement('textarea'); ta.value = t; document.body.append(ta); ta.select();
+      let ok = false; try{ ok = document.execCommand('copy'); }catch(e){}
+      ta.remove();
+      m.textContent = ok ? 'Comprobante copiado.' : 'Copia este texto: ' + t;
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(()=>{ m.textContent = 'Comprobante copiado.'; }, fb);
+    } else fb();
+  };
+
+  // Ejecutar conteo al abrir la aplicación
+  inicializarContadorAlAbrir();
+})();
+</script>
+</body>
+</html>
